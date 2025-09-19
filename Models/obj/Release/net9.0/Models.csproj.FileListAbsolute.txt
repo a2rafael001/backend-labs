@@ -1,0 +1,11 @@
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\bin\Release\net9.0\Models.deps.json
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\bin\Release\net9.0\Models.dll
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\bin\Release\net9.0\Models.pdb
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.AssemblyInfoInputs.cache
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.AssemblyInfo.cs
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.csproj.CoreCompileInputs.cache
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.dll
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\refint\Models.dll
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\Models.pdb
+C:\Users\rafae\Desktop\4_kurs\BEKEND\lab1\Models\obj\Release\net9.0\ref\Models.dll
