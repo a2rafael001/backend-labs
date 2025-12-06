@@ -96,3 +96,32 @@
 
    ```text
    Host=pgbouncer;Port=6432;Database=postgres;Username=user;Password=mypassword
+
+
+   Лабораторная работа 2 – RabbitMQ и Consumer
+
+Вторая лабораторная расширяет проект асинхронным взаимодействием.
+
+Что реализовано
+
+RabbitMQ в docker-compose
+
+сервис rabbitmq (порт 5672 – AMQP, 15672 – веб-интерфейс);
+
+в переменных окружения Web API и Consumer задаются настройки RabbitMQ__Host, RabbitMQ__Port.
+
+Публикация событий из Web API
+
+после успешного создания заказов в POST /v1/orders/batch Web API формирует сообщения (например, OrderCreated) и публикует их в очередь RabbitMQ (по методичке – очередь oms.order.created);
+
+для сообщений используются контракты из проекта Messages.
+
+Сервис Consumer
+
+отдельный .NET-worker (Consumer), запускаемый через Docker;
+
+подписывается на очередь RabbitMQ;
+
+читает сообщения о созданных заказах и выполняет обработку (логирование, возможная работа с таблицей audit_log_order – по требованиям методички);
+
+конфигурация Consumer также вынесена в docker-compose.yml.
