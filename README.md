@@ -1,166 +1,98 @@
-Backend labs – Orders Service
+# Backend Labs – Orders Service (.NET 9)
 
-Репозиторий для лабораторных работ по backend-разработке (.NET 9, PostgreSQL, RabbitMQ).
-Реализован сервис заказов (Orders API) и отдельный consumer для обработки сообщений из очереди.
+Учебный проект по курсу Backend-разработки.  
+Сервис управляет заказами интернет-магазина и демонстрирует работу:
 
-Технологический стек
+- с PostgreSQL через Dapper;
+- с миграциями базы данных (FluentMigrator);
+- с пулом подключений PgBouncer;
+- с брокером сообщений RabbitMQ;
+- с отдельным Consumer-сервисом;
+- с Docker / Docker Compose.
 
-.NET 9, ASP.NET Core Web API
+Репозиторий использует структуру и требования из `universe-labs` (теги `1.0.0` и `2.0.0`).
 
-PostgreSQL 16 + PgBouncer
+---
 
-RabbitMQ 3.13 (management UI)
+## Структура решения
 
-Dapper
+- **WebApp** – основной Web API (.NET 9)
+  - контроллеры `V1/OrderController`
+  - бизнес-логика `BLL/Services`
+  - работа с БД через Dapper (`DAL/Repositories`)
+  - фоновые задачи (`Jobs/OrderGenerator`)
+  - валидация запросов через FluentValidation (`Validators`)
+- **Models** – доменные модели и DTO (V1)
+- **Migrations** – миграции FluentMigrator + консольный раннер
+- **Common**, **Messages** – общие контракты и сообщения для RabbitMQ
+- **Consumer** – отдельный worker-сервис, который подписывается на очередь RabbitMQ и обрабатывает события заказов
+- **docker-compose.yml** – инфраструктура (Postgres, PgBouncer, RabbitMQ, WebApi, Consumer)
 
-FluentMigrator
+---
 
-FluentValidation
+## Лабораторная работа 1 – REST API + PostgreSQL + Docker
 
-Docker / Docker Compose
+### Функционал
 
-Swagger (Swashbuckle)
+1. **Схема БД (FluentMigrator)**  
+   При старте приложения автоматически применяются миграции и создаются таблицы:
 
-Структура решения
+   - `orders`
+   - `order_items`
+   - `audit_log_order`
+   - типы `v1_order`, `v1_order_item`, `v1_audit_log_order`
 
-Common/ — общие модели и вспомогательный код, используемый в WebAPI и Consumer.
+2. **Основные эндпоинты API**
 
-Messages/ — контракты сообщений, отправляемых в RabbitMQ.
+   - `POST /v1/orders/batch`  
+     Пакетное создание заказов с позициями (`order_items`).
 
-Models/ — модели доступа к данным (Dapper).
+   - `POST /v1/orders/query`  
+     Фильтрация заказов по:
+     - `ids`
+     - `customer_ids`
+     - пагинация `page`, `page_size`
+     - опциональный флаг `include_order_items`.
 
-Migrations/ — миграции базы данных (FluentMigrator).
+   - `GET /v1/orders/{id}`  
+     Получить заказ по идентификатору (с деталями при `includeOrderItems=true`).
 
-WebApp/ — основной Web API сервис:
+   - `PUT /v1/orders/{id}`  
+     Обновление данных заказа.
 
-контроллеры (Controllers/V1/OrderController.cs);
+   - `DELETE /v1/orders/{id}`  
+     Удаление заказа.
 
-бизнес-логика (BLL/Services/OrderService.cs);
+   - `GET /health`  
+     Проверка здоровья сервиса.
 
-фоновые задания (Jobs/OrderGenerator.cs);
+3. **Валидация (FluentValidation)**
 
-валидаторы входных моделей (Validators/).
+   - `V1CreateOrderRequestValidator`
+     - список `orders` не пустой;
+     - `CustomerId > 0`;
+     - не пустой `DeliveryAddress`;
+     - `TotalPriceCents > 0`;
+     - `OrderItems` не пустой;
+     - `TotalPriceCents` равен сумме `PriceCents * Quantity` по всем позициям;
+     - все `PriceCurrency` в позициях одинаковые и совпадают с `TotalPriceCurrency`.
 
-Consumer/ — отдельный сервис-consumer для чтения сообщений из очереди RabbitMQ.
+   - `V1QueryOrdersRequestValidator`
+     - все `Ids` и `CustomerIds` > 0;
+     - `Page > 0`, `PageSize > 0` (если заданы);
+     - хотя бы одно из полей `Ids` или `CustomerIds` должно быть заполнено.
 
-docker-compose.yml — описание всего окружения (Postgres, PgBouncer, RabbitMQ, WebAPI, Consumer).
+4. **Инфраструктура (Docker)**
 
-postgresql.conf — конфигурация PostgreSQL.
+   В `docker-compose.yml` поднимаются:
 
-Лабораторная работа 1. Orders WebAPI + PostgreSQL
-Цель
+   - `postgres:16` – основная база данных;
+   - `public.ecr.aws/bitnami/pgbouncer:1.24.1` – пул подключений к Postgres;
+   - `backend_labs-…-webapi` – Web API (.NET 9);
+   - (для ЛР2) `rabbitmq:3.13-management-alpine` – брокер сообщений;
+   - (для ЛР2) `backend_labs-…-consumer` – worker-consumer.
 
-Создать REST API для работы с заказами, подключить PostgreSQL, настроить миграции и валидацию входных данных.
+   Внутри Docker-сети Web API и Consumer ходят в БД по строке подключения вида:
 
-Схема БД
-
-Миграции создают:
-
-таблицу orders;
-
-таблицу order_items;
-
-таблицу audit_log_order (для логирования операций с заказами);
-
-служебную таблицу version_info и типы v1_order, v1_order_item, v1_audit_log_order для работы с FluentMigrator.
-
-Миграции выполняются автоматически при старте WebApp (это видно в логах контейнера: создаются таблицы и индексы).
-
-Основные эндпоинты
-
-Базовый маршрут контроллера: api/v1/order.
-
-POST /api/v1/order/batch-create
-
-Принимает массив заказов.
-
-Для каждого заказа создаются строки в таблицах orders и order_items.
-
-Ответ содержит созданные заказы с присвоенными id и метаданными (created_at, updated_at).
-
-POST /api/v1/order/query
-
-Поиск заказов по фильтрам:
-
-ids — список ID заказов;
-
-customer_ids — список ID клиентов;
-
-постраничный вывод: page, page_size;
-
-include_order_items — включать ли позиции заказа.
-
-Возвращает список заказов (опционально вместе с order_items).
-
-Валидация запросов
-
-Используется FluentValidation.
-
-V1CreateOrderRequestValidator
-
-Orders — не пустой массив.
-
-Для каждого заказа:
-
-CustomerId > 0;
-
-DeliveryAddress не пустая строка;
-
-TotalPriceCents > 0;
-
-TotalPriceCurrency не пустая строка;
-
-OrderItems не пустой массив.
-
-Для каждого товара (OrderItemValidator):
-
-ProductId > 0;
-
-Quantity > 0;
-
-PriceCents > 0;
-
-PriceCurrency, ProductTitle не пустые.
-
-Дополнительные правила:
-
-TotalPriceCents должен совпадать с суммой OrderItems.PriceCents * Quantity;
-
-валюта всех позиций должна быть одинаковой;
-
-валюта позиций должна совпадать с TotalPriceCurrency.
-
-V1QueryOrdersRequestValidator
-
-Все Ids и CustomerIds должны быть > 0;
-
-Page и PageSize (если заданы) > 0;
-
-Должен быть указан хотя бы один фильтр: Ids или CustomerIds.
-
-При нарушении правил API возвращает 400 Bad Request с детальным описанием ошибок.
-
-Лабораторная работа 2. RabbitMQ + Consumer
-Цель
-
-Добавить обмен сообщениями между сервисами через RabbitMQ и вынести часть логики в отдельный consumer.
-
-Что сделано
-
-В docker-compose.yml добавлен сервис rabbitmq (порт 5672 для приложений и 15672 для web-интерфейса).
-
-Web API отправляет сообщения о созданных заказах в очередь RabbitMQ (контракты лежат в проекте Messages).
-
-Проект Consumer:
-
-подключается к тому же PostgreSQL через PgBouncer;
-
-слушает очередь RabbitMQ;
-
-обрабатывает сообщения (логирует/записывает данные в таблицу audit_log_order).
-
-Таким образом:
-
-WebApp отвечает за HTTP-API и создание заказов;
-
-Consumer — за асинхронную обработку событий.
+   ```text
+   Host=pgbouncer;Port=6432;Database=postgres;Username=user;Password=mypassword
