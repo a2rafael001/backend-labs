@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "NeoJlCKVI+U=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\rafae\\Desktop\\4_kurs\\Backend_labs-3361dee6bd9a5fea547c1e3f1d4c5886d47bfc74\\Messages\\Messages.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rafae\\.nuget\\packages\\rabbitmq.client\\7.1.2\\rabbitmq.client.7.1.2.nupkg.sha512",
+    "C:\\Users\\rafae\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
+    "C:\\Users\\rafae\\.nuget\\packages\\system.threading.ratelimiting\\8.0.0\\system.threading.ratelimiting.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

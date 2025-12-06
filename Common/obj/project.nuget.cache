@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "06g26c/xnis=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\rafae\\Desktop\\4_kurs\\Backend_labs-3361dee6bd9a5fea547c1e3f1d4c5886d47bfc74\\Common\\Common.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\rafae\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}
